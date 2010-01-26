@@ -3,10 +3,8 @@ package com.thoughtworks.moneydroid.sms;
 import org.easymock.classextension.EasyMock;
 
 import android.telephony.gsm.SmsMessage;
-import static com.thoughtworks.moneydroid.sms.CommonNumbers.twice;
 
 public class SmsMother {
-	
 
 	public static SmsMessage withdrawalSmsFromStandardChartered() {
 		return SmsBuilder.sms().fromStandardChartered().aboutAWithdrawal().create();
@@ -21,7 +19,15 @@ public class SmsMother {
 	}
 
 	public static SmsMessage smsFromBankAboutSomethingElseThanWithdrawal() {
-		return SmsBuilder.sms().fromStandardChartered().andExpectThatCall(twice()).aboutDeposit().create();
+		return SmsBuilder.sms().fromStandardChartered().aboutDeposit().create();
+	}
+
+	public static SmsMessage smsFromBankAboutPurchase() {
+		return smsFromBankAboutPurchase(4900.00f);
+	}
+	
+	public static SmsMessage smsFromBankAboutPurchase(float amount){
+		return SmsBuilder.sms().fromStandardChartered().aboutPurchase(String.valueOf(amount)).create();
 	}
 
 	private static class SmsBuilder {
@@ -32,8 +38,10 @@ public class SmsMother {
 			anySmsMessage = EasyMock.createMock(SmsMessage.class);
 		}
 
-		public SmsBuilder andExpectThatCall(int repeat) {
-			EasyMock.expectLastCall().times(repeat);
+		public SmsBuilder aboutPurchase(String amount) {
+			EasyMock.expect(anySmsMessage.getDisplayMessageBody()).andReturn(
+					String.format("You have done a debit purchase of INR %s at ARJAY RETAIL SONY BANGALORE.Available balance as on Jan 6 2010 8:45 PM IST is INR 10,000.00",amount));
+			EasyMock.expectLastCall().anyTimes();
 			return this;
 		}
 
@@ -50,6 +58,7 @@ public class SmsMother {
 
 		public SmsBuilder fromStandardChartered() {
 			EasyMock.expect(anySmsMessage.getDisplayOriginatingAddress()).andReturn("DM-StanChrt");
+			EasyMock.expectLastCall().anyTimes();
 			return this;
 		}
 
@@ -64,10 +73,9 @@ public class SmsMother {
 
 		public SmsBuilder fromSourceOtherThanTheBank() {
 			EasyMock.expect(anySmsMessage.getDisplayOriginatingAddress()).andReturn("TA-Adiclub");
+			EasyMock.expectLastCall().anyTimes();
 			return this;
 		}
 	}
-
-
 
 }
